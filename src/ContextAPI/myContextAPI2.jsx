@@ -22,7 +22,7 @@ const useMyContext2 = () => {
   const context2 = useContext(MyContext2);
 
   if (!context2) {
-    throw new Error("useMyContext2 must be used within a MyContextProvider");
+    throw new Error("useMyContext2 must be used within a MyContext2Provider");
   }
 
   const { data, setData } = context2; // Destructure data and setData

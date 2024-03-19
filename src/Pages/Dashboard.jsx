@@ -1,61 +1,146 @@
 import { Helmet } from "react-helmet-async";
 import Menu from "../Components/Menu";
 import JobCard from "../Components/JobCard";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useDashboardContext } from "../ContextAPI/DashboardContextAPI";
 
 const Dashboard = ({ title }) => {
-  const jobCardContents = [
-    {
-      id: 1,
-      jobtitle: "Product Designer",
-      subText: "Total Application",
-      total: 54,
-    },
-    {
-      id: 2,
-      jobtitle: "Javascript Developer",
-      subText: "Total Application",
-      total: 39,
-    },
-    {
-      id: 3,
-      jobtitle: "Python Developer",
-      subText: "Total Application",
-      total: 60,
-    },
-    {
-      id: 4,
-      jobtitle: "MERN Stack Developer",
-      subText: "Total Application",
-      total: 50,
-    },
-    {
-      id: 5,
-      jobtitle: "Product Designer",
-      subText: "Total Application",
-      total: 54,
-    },
-    {
-      id: 6,
-      jobtitle: "Junior UI/UX Designer",
-      subText: "Total Application",
-      total: 39,
-    },
-    {
-      id: 7,
-      jobtitle: "Brand Strategist",
-      subText: "Total Application",
-      total: 60,
-    },
-    {
-      id: 8,
-      jobtitle: "Jr. Frontend Engineer",
-      subText: "Total Application",
-      total: 50,
-    },
-  ];
+  const { getAllJobs, setAllJobs } = useDashboardContext(); //my Context API
+  const [recentJobs, setRecentJobs] = useState([]);
+  const [addNewJob, setAddNewJob] = useState({});
+  const [totalApplicants, setTotalApplicants] = useState();
+  const [shortListed, setShortListed] = useState();
+  const [rejected, setRejected] = useState();
+
+  //get all jobs
+  const getMyAllJobs = async (req, res) => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_REACT_API}/api/v1/get-all-jobs`
+      );
+      if (data?.success) {
+        setAllJobs(data?.allJobs);
+        setRecentJobs(data?.recentJobs);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getMyAllJobs();
+    findTotalApplicants();
+    findApplicantStatus();
+  }, [addNewJob]);
+
+  const createJob = (data) => {
+    setAddNewJob(data);
+    reset();
+  };
+
+  //creating new job using axios call
+  const createJobAxios = async (req, res) => {
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_REACT_API}/api/v1/create-job`,
+        {
+          jobTitle: addNewJob.jobTitle,
+          jobDescription: addNewJob.jobDescription,
+        }
+      );
+      if (data?.success) {
+        console.log("Job Created Successfully");
+        console.log(data.job);
+        await getMyAllJobs(); // Refetch jobs after successful creation
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    createJobAxios();
+  }, [addNewJob]);
+
+  //finding total applicants for all jobs
+  const findTotalApplicants = async (req, res) => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_REACT_API}/api/v1/total-applicants`
+      );
+      if (data?.success) {
+        setTotalApplicants(data.totalApplicant);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //finding applicant status like shortlisted or rejected
+  const findApplicantStatus = async (req, res) => {
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_REACT_API}/api/v1/find-applicant-status`
+      );
+      if (data?.success) {
+        setShortListed(data.totalShortListed);
+        setRejected(data.totalRejected);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
 
   return (
     <>
+      {/* Add job modal starts form here */}
+      <dialog id="addJobModal" className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">Hello!</h3>
+          <div className="py-4">
+            <form onSubmit={handleSubmit(createJob)}>
+              <input
+                {...register("jobTitle", { required: true })}
+                placeholder="add jobTitle"
+                className="block py-[5px] px-[10px] my-[10px] w-[90%] mx-auto bg-[#2b2a33] text-white"
+              />
+              {errors.jobTitle && <p>Job title is required.</p>}
+              <textarea
+                {...register("jobDescription", { required: true })}
+                placeholder="Add Job Description"
+                className="block py-[5px] px-[10px] my-[10px] w-[90%] mx-auto bg-[#2b2a33] text-white"
+                style={{ minHeight: "200px", maxHeight: "350px" }}
+              />
+              {errors.jobDescription && <p>Job Description is required.</p>}
+
+              <button
+                type="submit"
+                className="btn btn-success btn-sm rounded-none ml-[20px]"
+              >
+                Create Job
+              </button>
+            </form>
+          </div>
+          <div className="modal-action">
+            <form method="dialog">
+              {/* if there is a button in form, it will close the modal */}
+              <button className="btn btn-sm rounded-none btn-info">
+                Close
+              </button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+      {/* Add job modal ends here */}
       <div>
         <Helmet>
           <title>{title}</title>
@@ -95,8 +180,10 @@ const Dashboard = ({ title }) => {
           <div className="flex md:flex-row xl:flex-row flex-wrap bg-[#ffffff]">
             <div className="md:basis-1/3 xl:basis-1/3 py-[50px]">
               <div className="inline-block">
-                <p className="font-semibold md:text-[12px] xl:text-[16px]">Total Candidates</p>
-                <p className="font-bold xl:text-[20px]">361</p>
+                <p className="font-semibold md:text-[12px] xl:text-[16px]">
+                  Total Candidates
+                </p>
+                <p className="font-bold xl:text-[20px]">{totalApplicants}</p>
               </div>
               <div className="inline-block">
                 <img
@@ -111,7 +198,7 @@ const Dashboard = ({ title }) => {
                 <p className="font-semibold md:text-[12px] xl:text-[16px]">
                   Shortlisted Candidates
                 </p>
-                <p className="font-bold xl:text-[20px]">201</p>
+                <p className="font-bold xl:text-[20px]">{shortListed}</p>
               </div>
               <div className="inline-block">
                 <img
@@ -126,7 +213,7 @@ const Dashboard = ({ title }) => {
                 <p className="font-semibold md:text-[12px] xl:text-[16px]">
                   Rejected Candidates
                 </p>
-                <p className="font-bold xl:text-[20px]">160</p>
+                <p className="font-bold xl:text-[20px]">{rejected}</p>
               </div>
               <div className="inline-block">
                 <img
@@ -139,18 +226,34 @@ const Dashboard = ({ title }) => {
           </div>
           <div className="flex md:flex-row xl:flex-row gap-2 md:py-[50px] xl:py-[100px] bg-[#ffffff]">
             <div className="md:basis-2/3 xl:basis-2/3">
-              <img src="../dashboard/statistics.png" alt="statistics" className="md:w-[200px] lg:w-[400px]"></img>
+              <img
+                src="../dashboard/statistics.png"
+                alt="statistics"
+                className="md:w-[200px] lg:w-[400px]"
+              ></img>
             </div>
             <div className="md:basis-1/3 xl:basis-1/3">
-              <img src="../dashboard/statistics_2.png" alt="statistics_2" className="md:w-[100px] lg:w-[200px]"></img>
+              <img
+                src="../dashboard/statistics_2.png"
+                alt="statistics_2"
+                className="md:w-[100px] lg:w-[200px]"
+              ></img>
             </div>
           </div>
           <div className="flex md:flex-row xl:flex-row gap-3 md:py-[50px] xl:py-[0px] bg-[#ffffff]">
             <div className="md:basis-2/3 xl:basis-2/3">
-              <img src="../dashboard/Time_data.png" alt="Time_data" className="md:w-[200px] lg:w-[400px]"></img>
+              <img
+                src="../dashboard/Time_data.png"
+                alt="Time_data"
+                className="md:w-[200px] lg:w-[400px]"
+              ></img>
             </div>
             <div className="md:basis-2/3 xl:basis-1/3">
-              <img src="../dashboard/Gender.png" alt="Gender" className="md:w-[100px] md:pl-[50px] lg:w-[200px]"></img>
+              <img
+                src="../dashboard/Gender.png"
+                alt="Gender"
+                className="md:w-[100px] md:pl-[50px] lg:w-[200px]"
+              ></img>
             </div>
           </div>
         </div>
@@ -160,7 +263,10 @@ const Dashboard = ({ title }) => {
             <h1 className="font-semibold md:text-[16px] xl:text-[24px] pt-[50px] pb-[20px]">
               Welcome back XTZ
             </h1>
-            <button className="btn bg-[#11998e] text-white md:btn-sm xl:btn-md rounded-md">
+            <button
+              onClick={() => document.getElementById("addJobModal").showModal()}
+              className="btn bg-[#11998e] text-white md:btn-sm xl:btn-md rounded-md"
+            >
               +Create New Job
             </button>
           </div>
@@ -168,8 +274,9 @@ const Dashboard = ({ title }) => {
             <p className="font-medium md:tracking-tight xl:tracking-[1px] pt-[50px] pb-[30px] md:pl-[5px] xl:pl-[30px]">
               Recent Added Jobs
             </p>
-            {jobCardContents.map((jc) => (
-              <JobCard key={jc.id} props={jc} />
+
+            {recentJobs.map((job, index) => (
+              <JobCard key={index} props={job} />
             ))}
           </div>
         </div>
