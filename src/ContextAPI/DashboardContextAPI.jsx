@@ -4,6 +4,9 @@ const Dashboard_API_Obj = createContext();
 
 const DashboardAPIObjProvider = ({ children }) => {
   const [getAllJobs, setAllJobs] = useState([]);
+  const [totalApplicants, setTotalApplicants] = useState();
+  const [shortListed, setShortListed] = useState();
+  const [rejected, setRejected] = useState();
 
   useEffect(() => {
     setAllJobs([
@@ -19,7 +22,18 @@ const DashboardAPIObjProvider = ({ children }) => {
   }, []);
 
   return (
-    <Dashboard_API_Obj.Provider value={{ getAllJobs, setAllJobs }}>
+    <Dashboard_API_Obj.Provider
+      value={{
+        getAllJobs,
+        setAllJobs,
+        totalApplicants,
+        setTotalApplicants,
+        shortListed,
+        setShortListed,
+        rejected,
+        setRejected,
+      }}
+    >
       {children}
     </Dashboard_API_Obj.Provider>
   );
@@ -36,8 +50,27 @@ const useDashboardContext = () => {
     );
   }
 
-  const { getAllJobs, setAllJobs } = myContext; // Destructure getAllJobs, setAllJobs
-  return { getAllJobs, setAllJobs };
+  const {
+    getAllJobs,
+    setAllJobs,
+    totalApplicants,
+    setTotalApplicants,
+    shortListed,
+    setShortListed,
+    rejected,
+    setRejected,
+  } = myContext;
+  //  Destructure getAllJobs, setAllJobs, totalApplicants, setTotalApplicants,shortListed,setShortListed,rejected, setRejected,
+  return {
+    getAllJobs,
+    setAllJobs,
+    totalApplicants,
+    setTotalApplicants,
+    shortListed,
+    setShortListed,
+    rejected,
+    setRejected,
+  };
 };
 
 export { useDashboardContext, DashboardAPIObjProvider };

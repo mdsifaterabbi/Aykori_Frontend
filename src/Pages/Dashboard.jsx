@@ -7,12 +7,18 @@ import axios from "axios";
 import { useDashboardContext } from "../ContextAPI/DashboardContextAPI";
 
 const Dashboard = ({ title }) => {
-  const { getAllJobs, setAllJobs } = useDashboardContext(); //my Context API
+  const {
+    getAllJobs,
+    setAllJobs,
+    totalApplicants,
+    setTotalApplicants,
+    shortListed,
+    setShortListed,
+    rejected,
+    setRejected,
+  } = useDashboardContext(); //my Context API
   const [recentJobs, setRecentJobs] = useState([]);
   const [addNewJob, setAddNewJob] = useState({});
-  const [totalApplicants, setTotalApplicants] = useState();
-  const [shortListed, setShortListed] = useState();
-  const [rejected, setRejected] = useState();
 
   //get all jobs
   const getMyAllJobs = async (req, res) => {

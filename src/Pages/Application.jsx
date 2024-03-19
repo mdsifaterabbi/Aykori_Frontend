@@ -18,7 +18,7 @@ const Application = ({ title }) => {
         </div>
         <div className="md:basis-[85%] lg:basis-[80%] xl:basis-[80%] h-[100vh] bg-[#e0edea]">
           <h1 className="font-bold xl:text-[20px] pt-[30px] pl-[20px]">Application</h1>
-          <p className="font-bold xl:text-[12px] pt-[15px] pl-[20px]">On going recruitment</p>
+          <p className="font-bold md:text-[12px] xl:text-[12px] pt-[15px] pl-[20px]">On going recruitment</p>
 
           <div>
             <TabIndex />
